@@ -12,6 +12,20 @@ try:
 except ImportError:
     generate_traffic = None
 
+# PCU Mapping
+PCU_MAPPING = {
+    'passenger': 1.0,
+    'truck': 2.0,
+    'bus': 2.5,
+    'motorcycle': 0.5
+}
+
+try:
+    from traffic_rules import TrafficRules
+except ImportError:
+    TrafficRules = None
+
+
 class SumoGymEnv(gym.Env):
     """
     SUMO Gymnasium Environment for Traffic Signal Control
@@ -73,6 +87,24 @@ class SumoGymEnv(gym.Env):
         self.current_phase_index = 0
         self.metric_collector = None
         
+        # Initialize Safety Layer
+        if TrafficRules:
+            self.rules = TrafficRules(min_green_time=15)
+            self.last_phase_change_step = 0
+        else:
+            self.rules = None
+            
+    def _get_start_vehicle_type_pcu(self, vtype):
+         # Try exact match first
+        if vtype in PCU_MAPPING:
+            return PCU_MAPPING[vtype]
+        # Try partial match (e.g. 'bus_1' -> 'bus')
+        vtype_lower = vtype.lower()
+        for key, pcu in PCU_MAPPING.items():
+            if key in vtype_lower:
+                return pcu
+        return 1.0 # Default
+    
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         
@@ -97,6 +129,7 @@ class SumoGymEnv(gym.Env):
         
         self.step_counter = 0
         self.current_phase_index = 0
+        self.last_phase_change_step = 0 # Assume started at 0
         
         return self._get_observation(), {}
         
@@ -116,11 +149,13 @@ class SumoGymEnv(gym.Env):
         observation = self._get_observation()
         
         # 4. Calculate Reward
-        # Reward = - (Total Queue Length + Total Wait Time)
+        # Reward = - (1.0 * Total Queue PCU + 0.1 * Total Wait PCU)
         # We want to minimize queue and wait, so maximize negative sum
-        queue_len = np.sum(observation[:4])
-        wait_time = np.sum(observation[4:8])
-        reward = - (queue_len + wait_time)
+        queue_len_pcu = np.sum(observation[:4])
+        wait_time_pcu = np.sum(observation[4:8])
+        
+        # Weighted Reward
+        reward = - (1.0 * queue_len_pcu + 0.1 * wait_time_pcu)
         
         # 5. Check Done
         terminated = self.step_counter >= self.max_steps
@@ -150,12 +185,32 @@ class SumoGymEnv(gym.Env):
             pass # TODO: Refine this logic for SUMO integration
             
         elif self.mode == 'phase_selection':
-            # Switch to the selected phase
-            target_phase = action
-            current = traci.trafficlight.getPhase(self.tls_id)
-            if current != target_phase:
-                traci.trafficlight.setPhase(self.tls_id, target_phase)
-                self.current_phase_index = target_phase
+            # 1. Get current state
+            current_phase = traci.trafficlight.getPhase(self.tls_id)
+            
+            # Calculate how long we've been in this phase
+            # current simulation time - time of last change
+            # Note: Simulation time in SUMO is in seconds, but we track steps.
+            # Ideally we track simulation seconds.
+            current_sim_time = traci.simulation.getTime()
+            current_duration = current_sim_time - self.last_phase_change_step
+            
+            # 2. Safety Check (Rule-Based Supervisor)
+            final_action = action
+            if self.rules:
+                final_action = self.rules.get_safe_action(
+                    self.tls_id, 
+                    action, 
+                    current_phase, 
+                    current_duration
+                )
+                
+            # 3. Apply Action
+            if current_phase != final_action:
+                traci.trafficlight.setPhase(self.tls_id, final_action)
+                self.current_phase_index = final_action
+                # Update timestamp of change
+                self.last_phase_change_step = traci.simulation.getTime()
                 
     def _get_observation(self):
         # Collect metrics from SUMO
@@ -174,12 +229,27 @@ class SumoGymEnv(gym.Env):
         directions = [["-E1_0", "-E1_1"], ["-E2_0", "-E2_1"], ["-E3_0", "-E3_1"], ["-E0_0", "-E0_1"]]
         
         for lanes in directions:
-            q = 0
-            w = 0
+            q = 0.0
+            w = 0.0
             for lane in lanes:
                 try:
-                    q += traci.lane.getLastStepHaltingNumber(lane)
-                    w += traci.lane.getWaitingTime(lane)
+                    # Get all vehicles in the lane
+                    vehicles = traci.lane.getLastStepVehicleIDs(lane)
+                    for veh in vehicles:
+                        vtype = traci.vehicle.getTypeID(veh)
+                        pcu = self._get_start_vehicle_type_pcu(vtype)
+                        
+                        # Calculate PCU-weighted Queue
+                        # Queue: vehicles with speed < 0.1 m/s (approx)
+                        if traci.vehicle.getSpeed(veh) < 0.1:
+                            q += pcu
+                            
+                        # Calculate PCU-weighted Wait Time
+                        # Note: getWaitingTime returns accumulated waiting seconds
+                        # We weight the waiting seconds by PCU
+                        waiting_seconds = traci.vehicle.getWaitingTime(veh)
+                        w += waiting_seconds * pcu
+                        
                 except:
                     pass
             queues.append(q)
