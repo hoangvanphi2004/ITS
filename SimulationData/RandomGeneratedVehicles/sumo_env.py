@@ -12,6 +12,15 @@ try:
 except ImportError:
     generate_traffic = None
 
+# PCU Mapping
+PCU_MAPPING = {
+    'passenger': 1.0,
+    'truck': 2.0,
+    'bus': 2.5,
+    'motorcycle': 0.5
+}
+
+
 class SumoGymEnv(gym.Env):
     """
     SUMO Gymnasium Environment for Traffic Signal Control
@@ -73,6 +82,17 @@ class SumoGymEnv(gym.Env):
         self.current_phase_index = 0
         self.metric_collector = None
         
+    def _get_start_vehicle_type_pcu(self, vtype):
+         # Try exact match first
+        if vtype in PCU_MAPPING:
+            return PCU_MAPPING[vtype]
+        # Try partial match (e.g. 'bus_1' -> 'bus')
+        vtype_lower = vtype.lower()
+        for key, pcu in PCU_MAPPING.items():
+            if key in vtype_lower:
+                return pcu
+        return 1.0 # Default
+    
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         
@@ -116,11 +136,13 @@ class SumoGymEnv(gym.Env):
         observation = self._get_observation()
         
         # 4. Calculate Reward
-        # Reward = - (Total Queue Length + Total Wait Time)
+        # Reward = - (1.0 * Total Queue PCU + 0.1 * Total Wait PCU)
         # We want to minimize queue and wait, so maximize negative sum
-        queue_len = np.sum(observation[:4])
-        wait_time = np.sum(observation[4:8])
-        reward = - (queue_len + wait_time)
+        queue_len_pcu = np.sum(observation[:4])
+        wait_time_pcu = np.sum(observation[4:8])
+        
+        # Weighted Reward
+        reward = - (1.0 * queue_len_pcu + 0.1 * wait_time_pcu)
         
         # 5. Check Done
         terminated = self.step_counter >= self.max_steps
@@ -174,12 +196,27 @@ class SumoGymEnv(gym.Env):
         directions = [["-E1_0", "-E1_1"], ["-E2_0", "-E2_1"], ["-E3_0", "-E3_1"], ["-E0_0", "-E0_1"]]
         
         for lanes in directions:
-            q = 0
-            w = 0
+            q = 0.0
+            w = 0.0
             for lane in lanes:
                 try:
-                    q += traci.lane.getLastStepHaltingNumber(lane)
-                    w += traci.lane.getWaitingTime(lane)
+                    # Get all vehicles in the lane
+                    vehicles = traci.lane.getLastStepVehicleIDs(lane)
+                    for veh in vehicles:
+                        vtype = traci.vehicle.getTypeID(veh)
+                        pcu = self._get_start_vehicle_type_pcu(vtype)
+                        
+                        # Calculate PCU-weighted Queue
+                        # Queue: vehicles with speed < 0.1 m/s (approx)
+                        if traci.vehicle.getSpeed(veh) < 0.1:
+                            q += pcu
+                            
+                        # Calculate PCU-weighted Wait Time
+                        # Note: getWaitingTime returns accumulated waiting seconds
+                        # We weight the waiting seconds by PCU
+                        waiting_seconds = traci.vehicle.getWaitingTime(veh)
+                        w += waiting_seconds * pcu
+                        
                 except:
                     pass
             queues.append(q)
