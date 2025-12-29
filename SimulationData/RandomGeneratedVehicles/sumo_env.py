@@ -20,6 +20,11 @@ PCU_MAPPING = {
     'motorcycle': 0.5
 }
 
+try:
+    from traffic_rules import TrafficRules
+except ImportError:
+    TrafficRules = None
+
 
 class SumoGymEnv(gym.Env):
     """
@@ -82,6 +87,13 @@ class SumoGymEnv(gym.Env):
         self.current_phase_index = 0
         self.metric_collector = None
         
+        # Initialize Safety Layer
+        if TrafficRules:
+            self.rules = TrafficRules(min_green_time=15)
+            self.last_phase_change_step = 0
+        else:
+            self.rules = None
+            
     def _get_start_vehicle_type_pcu(self, vtype):
          # Try exact match first
         if vtype in PCU_MAPPING:
@@ -117,6 +129,7 @@ class SumoGymEnv(gym.Env):
         
         self.step_counter = 0
         self.current_phase_index = 0
+        self.last_phase_change_step = 0 # Assume started at 0
         
         return self._get_observation(), {}
         
@@ -172,12 +185,32 @@ class SumoGymEnv(gym.Env):
             pass # TODO: Refine this logic for SUMO integration
             
         elif self.mode == 'phase_selection':
-            # Switch to the selected phase
-            target_phase = action
-            current = traci.trafficlight.getPhase(self.tls_id)
-            if current != target_phase:
-                traci.trafficlight.setPhase(self.tls_id, target_phase)
-                self.current_phase_index = target_phase
+            # 1. Get current state
+            current_phase = traci.trafficlight.getPhase(self.tls_id)
+            
+            # Calculate how long we've been in this phase
+            # current simulation time - time of last change
+            # Note: Simulation time in SUMO is in seconds, but we track steps.
+            # Ideally we track simulation seconds.
+            current_sim_time = traci.simulation.getTime()
+            current_duration = current_sim_time - self.last_phase_change_step
+            
+            # 2. Safety Check (Rule-Based Supervisor)
+            final_action = action
+            if self.rules:
+                final_action = self.rules.get_safe_action(
+                    self.tls_id, 
+                    action, 
+                    current_phase, 
+                    current_duration
+                )
+                
+            # 3. Apply Action
+            if current_phase != final_action:
+                traci.trafficlight.setPhase(self.tls_id, final_action)
+                self.current_phase_index = final_action
+                # Update timestamp of change
+                self.last_phase_change_step = traci.simulation.getTime()
                 
     def _get_observation(self):
         # Collect metrics from SUMO
