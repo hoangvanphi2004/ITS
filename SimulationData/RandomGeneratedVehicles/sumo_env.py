@@ -41,7 +41,23 @@ class SumoGymEnv(gym.Env):
          current_phase_index]
     """
     
-    def __init__(self, mode='time_adjust', gui=False, max_steps=500, rank=0):
+    def __init__(
+        self,
+        mode='time_adjust',
+        gui=False,
+        max_steps=500,
+        rank=0,
+        port_base=None,
+        simulation_steps=5,
+        num_vehicles=200,
+        curriculum_end=None,
+        curriculum_episodes=1,
+        scenario_seed=None,
+        scenario_seed_increment=True,
+        throughput_weight=0.01,
+        sumo_no_step_log=False,
+        sumo_no_warnings=False,
+    ):
         super(SumoGymEnv, self).__init__()
         
         self.mode = mode
@@ -49,6 +65,22 @@ class SumoGymEnv(gym.Env):
         self.max_steps = max_steps
         self.step_counter = 0
         self.rank = rank
+        self.simulation_steps = simulation_steps
+        self.base_num_vehicles = num_vehicles
+        self.curriculum_end = curriculum_end
+        self.curriculum_episodes = max(curriculum_episodes, 1)
+        self.scenario_seed = scenario_seed
+        self.scenario_seed_increment = scenario_seed_increment
+        self.throughput_weight = throughput_weight
+        self.episode_count = 0
+        self.last_throughput = 0.0
+        if port_base is None:
+            env_port_base = os.getenv("SUMO_PORT_BASE")
+            try:
+                port_base = int(env_port_base) if env_port_base is not None else 8813
+            except ValueError:
+                port_base = 8813
+        self.sumo_port = port_base + self.rank
         
         # Unique route file for this parallel instance to prevent conflicts
         # We need to go up two levels: 
@@ -68,6 +100,10 @@ class SumoGymEnv(gym.Env):
             "--start",
             "--quit-on-end"
         ]
+        if sumo_no_step_log:
+            self.sumo_cmd.append("--no-step-log")
+        if sumo_no_warnings:
+            self.sumo_cmd.append("--no-warnings")
         
         # Define Action Space
         if self.mode == 'time_adjust':
@@ -107,13 +143,33 @@ class SumoGymEnv(gym.Env):
     
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
+        self.episode_count += 1
         
         # 1. Generate new traffic scenario (Adaptive)
         if generate_traffic:
+            if self.curriculum_end is None or self.curriculum_end <= self.base_num_vehicles:
+                current_vehicles = self.base_num_vehicles
+            else:
+                progress = min(self.episode_count / self.curriculum_episodes, 1.0)
+                current_vehicles = int(
+                    round(self.base_num_vehicles + progress * (self.curriculum_end - self.base_num_vehicles))
+                )
+            scenario_seed = None
+            if self.scenario_seed is not None:
+                scenario_seed = self.scenario_seed
+                if self.scenario_seed_increment:
+                    scenario_seed += self.episode_count + (self.rank * 100000)
             # Only print for rank 0 to avoid clutter
             if self.rank == 0:
-                print(f"Generating new traffic scenario for rank {self.rank}...")
-            generate_traffic.generate_route_file(self.route_file)
+                print(
+                    "Generating new traffic scenario for rank "
+                    f"{self.rank} (vehicles={current_vehicles}, seed={scenario_seed})..."
+                )
+            generate_traffic.generate_route_file(
+                self.route_file,
+                num_vehicles=current_vehicles,
+                seed=scenario_seed,
+            )
             
         # 2. Start SUMO
         try:
@@ -122,7 +178,7 @@ class SumoGymEnv(gym.Env):
             pass
             
         try:
-            traci.start(self.sumo_cmd)
+            traci.start(self.sumo_cmd, port=self.sumo_port)
         except Exception as e:
             print(f"Error starting SUMO: {e}")
             # Consider raising error or retrying
@@ -141,8 +197,7 @@ class SumoGymEnv(gym.Env):
         
         # 2. Run Simulation Steps (e.g., 5 seconds)
         # We simulate multiple steps to let the action have effect
-        simulation_steps = 5
-        for _ in range(simulation_steps):
+        for _ in range(self.simulation_steps):
             traci.simulationStep()
             
         # 3. Get Observation
@@ -155,7 +210,8 @@ class SumoGymEnv(gym.Env):
         wait_time_pcu = np.sum(observation[4:8])
         
         # Weighted Reward
-        reward = - (1.0 * queue_len_pcu + 0.1 * wait_time_pcu)
+        throughput_reward = self.throughput_weight * self.last_throughput
+        reward = - (1.0 * queue_len_pcu + 0.1 * wait_time_pcu) + throughput_reward
         
         # 5. Check Done
         terminated = self.step_counter >= self.max_steps
@@ -166,8 +222,10 @@ class SumoGymEnv(gym.Env):
             pass
             
         info = {
-            "queue_length": queue_len,
-            "wait_time": wait_time
+            "queue_length": queue_len_pcu,
+            "wait_time": wait_time_pcu,
+            "throughput_pcu": self.last_throughput,
+            "throughput_reward": throughput_reward,
         }
         
         return observation, reward, terminated, truncated, info
@@ -223,6 +281,7 @@ class SumoGymEnv(gym.Env):
         
         queues = []
         waits = []
+        moving_pcu = 0.0
         
         # Rough estimation by aggregating lanes
         # North, East, South, West
@@ -241,8 +300,11 @@ class SumoGymEnv(gym.Env):
                         
                         # Calculate PCU-weighted Queue
                         # Queue: vehicles with speed < 0.1 m/s (approx)
-                        if traci.vehicle.getSpeed(veh) < 0.1:
+                        speed = traci.vehicle.getSpeed(veh)
+                        if speed < 0.1:
                             q += pcu
+                        else:
+                            moving_pcu += pcu
                             
                         # Calculate PCU-weighted Wait Time
                         # Note: getWaitingTime returns accumulated waiting seconds
@@ -256,6 +318,7 @@ class SumoGymEnv(gym.Env):
             waits.append(w)
             
         obs = np.array(queues + waits + [self.current_phase_index], dtype=np.float32)
+        self.last_throughput = moving_pcu
         return obs
         
     def close(self):

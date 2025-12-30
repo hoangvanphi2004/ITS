@@ -4,304 +4,304 @@
     <vType id="bus" accel="1.2" decel="4.0" sigma="0.5" length="12.0" minGap="3.0" maxSpeed="30.0" color="0,0,1"/>
     <vType id="truck" accel="1.5" decel="3.5" sigma="0.5" length="10.0" minGap="3.0" maxSpeed="40.0" color="0,1,0"/>
     <vType id="motorcycle" accel="3.0" decel="5.0" sigma="0.5" length="2.5" minGap="1.5" maxSpeed="55.0" color="1,1,0"/>
-    <vehicle id="veh_77" type="passenger" depart="3.25">
-        <route edges="-E2 E3"/>
+    <vehicle id="veh_71" type="bus" depart="2.82">
+        <route edges="-E2 E1"/>
     </vehicle>
-    <vehicle id="veh_28" type="passenger" depart="3.88">
-        <route edges="E0 E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_37" type="passenger" depart="7.54">
-        <route edges="E0 E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_53" type="passenger" depart="7.79">
-        <route edges="-E6 -E2 -E0"/>
-    </vehicle>
-    <vehicle id="veh_88" type="passenger" depart="10.26">
-        <route edges="-E4 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_1" type="passenger" depart="11.85">
-        <route edges="E0 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_21" type="passenger" depart="13.26">
-        <route edges="E0 E3"/>
-    </vehicle>
-    <vehicle id="veh_43" type="passenger" depart="28.61">
-        <route edges="-E6 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_93" type="passenger" depart="39.81">
-        <route edges="E0 E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_33" type="passenger" depart="41.43">
-        <route edges="E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_36" type="passenger" depart="42.66">
-        <route edges="-E6 -E2 -E0"/>
-    </vehicle>
-    <vehicle id="veh_60" type="truck" depart="44.3">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_78" type="passenger" depart="51.81">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_9" type="passenger" depart="52.72">
-        <route edges="E0 E3"/>
-    </vehicle>
-    <vehicle id="veh_14" type="passenger" depart="55.31">
-        <route edges="-E4 -E2 -E0"/>
-    </vehicle>
-    <vehicle id="veh_27" type="passenger" depart="62.76">
-        <route edges="-E6 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_16" type="passenger" depart="62.85">
-        <route edges="E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_56" type="passenger" depart="66.8">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_52" type="motorcycle" depart="67.4">
-        <route edges="E0 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_7" type="truck" depart="67.67">
-        <route edges="-E5 E4"/>
-    </vehicle>
-    <vehicle id="veh_58" type="passenger" depart="73.03">
-        <route edges="-E5 E6"/>
-    </vehicle>
-    <vehicle id="veh_76" type="passenger" depart="78.39">
-        <route edges="E0 E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_65" type="passenger" depart="80.11">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_4" type="motorcycle" depart="83.48">
-        <route edges="-E3 E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_31" type="passenger" depart="83.73">
-        <route edges="-E1 -E0"/>
-    </vehicle>
-    <vehicle id="veh_10" type="passenger" depart="84.54">
-        <route edges="-E3 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_89" type="passenger" depart="96.74">
-        <route edges="-E5 E6"/>
-    </vehicle>
-    <vehicle id="veh_95" type="passenger" depart="99.83">
-        <route edges="-E6 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_70" type="passenger" depart="102.97">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_38" type="bus" depart="106.7">
-        <route edges="-E4 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_18" type="motorcycle" depart="108.08">
-        <route edges="E2"/>
-    </vehicle>
-    <vehicle id="veh_46" type="bus" depart="112.33">
-        <route edges="-E3 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_42" type="passenger" depart="114.49">
-        <route edges="-E1 -E0"/>
-    </vehicle>
-    <vehicle id="veh_8" type="passenger" depart="116.5">
-        <route edges="-E1 -E0"/>
-    </vehicle>
-    <vehicle id="veh_44" type="motorcycle" depart="119.52">
-        <route edges="-E3 E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_25" type="passenger" depart="119.56">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_50" type="passenger" depart="119.91">
-        <route edges="-E5 E4"/>
-    </vehicle>
-    <vehicle id="veh_96" type="passenger" depart="128.06">
-        <route edges="E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_5" type="passenger" depart="128.18">
+    <vehicle id="veh_36" type="bus" depart="6.35">
         <route edges="-E1 E2 E5"/>
     </vehicle>
-    <vehicle id="veh_86" type="passenger" depart="128.21">
-        <route edges="E0 E3"/>
+    <vehicle id="veh_57" type="passenger" depart="34.85">
+        <route edges="-E1 E2 E5"/>
     </vehicle>
-    <vehicle id="veh_17" type="passenger" depart="133.22">
-        <route edges="-E1 -E0"/>
-    </vehicle>
-    <vehicle id="veh_22" type="passenger" depart="134.08">
-        <route edges="-E4 -E2 -E0"/>
-    </vehicle>
-    <vehicle id="veh_68" type="motorcycle" depart="141.2">
-        <route edges="-E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_92" type="passenger" depart="141.72">
-        <route edges="E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_74" type="motorcycle" depart="146.53">
-        <route edges="E2"/>
-    </vehicle>
-    <vehicle id="veh_83" type="passenger" depart="149.89">
-        <route edges="-E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_75" type="motorcycle" depart="151.5">
-        <route edges="E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_45" type="passenger" depart="155.7">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_59" type="passenger" depart="160.41">
-        <route edges="-E1 -E0"/>
-    </vehicle>
-    <vehicle id="veh_13" type="passenger" depart="169.78">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_26" type="passenger" depart="170.26">
-        <route edges="-E5 E6"/>
-    </vehicle>
-    <vehicle id="veh_41" type="passenger" depart="170.29">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_63" type="passenger" depart="171.91">
-        <route edges="E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_51" type="passenger" depart="173.81">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_79" type="motorcycle" depart="174.86">
-        <route edges="-E6 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_81" type="passenger" depart="175.74">
-        <route edges="-E3 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_90" type="passenger" depart="184.12">
-        <route edges="-E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_30" type="passenger" depart="191.85">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_69" type="passenger" depart="192.0">
-        <route edges="-E1 E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_54" type="passenger" depart="193.25">
-        <route edges="E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_20" type="motorcycle" depart="200.2">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_72" type="passenger" depart="210.7">
-        <route edges="-E1 E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_11" type="passenger" depart="211.97">
-        <route edges="-E6 -E2 -E0"/>
-    </vehicle>
-    <vehicle id="veh_71" type="passenger" depart="222.65">
-        <route edges="-E3 E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_12" type="passenger" depart="227.82">
-        <route edges="-E5 E4"/>
-    </vehicle>
-    <vehicle id="veh_84" type="passenger" depart="232.45">
-        <route edges="-E5 E6"/>
-    </vehicle>
-    <vehicle id="veh_97" type="bus" depart="240.23">
-        <route edges="E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_32" type="passenger" depart="245.2">
-        <route edges="-E1 E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_91" type="truck" depart="245.45">
-        <route edges="E0 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_23" type="motorcycle" depart="254.07">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_6" type="bus" depart="257.16">
-        <route edges="-E5 E4"/>
-    </vehicle>
-    <vehicle id="veh_2" type="passenger" depart="257.99">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_98" type="passenger" depart="276.54">
-        <route edges="-E1 -E0"/>
-    </vehicle>
-    <vehicle id="veh_62" type="passenger" depart="277.64">
-        <route edges="-E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_3" type="passenger" depart="286.74">
+    <vehicle id="veh_35" type="truck" depart="35.48">
         <route edges="-E6 E4"/>
     </vehicle>
-    <vehicle id="veh_48" type="bus" depart="287.7">
+    <vehicle id="veh_38" type="passenger" depart="38.99">
         <route edges="E0 E3"/>
     </vehicle>
-    <vehicle id="veh_29" type="passenger" depart="289.19">
-        <route edges="-E6 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_57" type="bus" depart="291.02">
-        <route edges="E0 E3"/>
-    </vehicle>
-    <vehicle id="veh_24" type="passenger" depart="295.76">
-        <route edges="-E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_82" type="passenger" depart="299.6">
-        <route edges="-E5 -E2 E1"/>
-    </vehicle>
-    <vehicle id="veh_85" type="passenger" depart="301.33">
-        <route edges="-E1 E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_19" type="passenger" depart="301.49">
-        <route edges="E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_15" type="passenger" depart="311.13">
-        <route edges="-E4 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_40" type="passenger" depart="319.08">
-        <route edges="E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_80" type="passenger" depart="320.65">
-        <route edges="E0 E3"/>
-    </vehicle>
-    <vehicle id="veh_0" type="passenger" depart="329.69">
-        <route edges="-E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_66" type="passenger" depart="338.87">
+    <vehicle id="veh_97" type="bus" depart="39.76">
         <route edges="-E5 E6"/>
     </vehicle>
-    <vehicle id="veh_47" type="passenger" depart="352.21">
-        <route edges="-E4 -E2 -E0"/>
-    </vehicle>
-    <vehicle id="veh_39" type="passenger" depart="369.88">
-        <route edges="E2"/>
-    </vehicle>
-    <vehicle id="veh_64" type="passenger" depart="375.22">
-        <route edges="E2 E6"/>
-    </vehicle>
-    <vehicle id="veh_87" type="passenger" depart="377.54">
-        <route edges="-E3 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_55" type="passenger" depart="382.51">
-        <route edges="-E6 -E2 E3"/>
-    </vehicle>
-    <vehicle id="veh_94" type="passenger" depart="385.57">
-        <route edges="E0 E2 E5"/>
-    </vehicle>
-    <vehicle id="veh_49" type="passenger" depart="387.48">
-        <route edges="-E5 E6"/>
-    </vehicle>
-    <vehicle id="veh_73" type="passenger" depart="388.06">
-        <route edges="-E3 E2 E4"/>
-    </vehicle>
-    <vehicle id="veh_99" type="motorcycle" depart="393.38">
+    <vehicle id="veh_4" type="truck" depart="41.26">
         <route edges="-E3 E2 E6"/>
     </vehicle>
-    <vehicle id="veh_67" type="passenger" depart="398.12">
+    <vehicle id="veh_32" type="bus" depart="41.45">
         <route edges="E0 E3"/>
     </vehicle>
-    <vehicle id="veh_35" type="passenger" depart="398.62">
+    <vehicle id="veh_33" type="passenger" depart="41.79">
+        <route edges="-E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_47" type="passenger" depart="44.16">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_72" type="truck" depart="58.7">
+        <route edges="E0 E3"/>
+    </vehicle>
+    <vehicle id="veh_42" type="passenger" depart="75.46">
+        <route edges="-E5 E6"/>
+    </vehicle>
+    <vehicle id="veh_82" type="bus" depart="78.06">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_90" type="truck" depart="83.64">
+        <route edges="-E3 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_44" type="bus" depart="87.66">
+        <route edges="-E4 -E2 -E0"/>
+    </vehicle>
+    <vehicle id="veh_93" type="passenger" depart="90.89">
+        <route edges="E0 E3"/>
+    </vehicle>
+    <vehicle id="veh_70" type="motorcycle" depart="94.49">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_99" type="passenger" depart="98.07">
+        <route edges="E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_73" type="passenger" depart="102.14">
+        <route edges="-E1 -E0"/>
+    </vehicle>
+    <vehicle id="veh_15" type="motorcycle" depart="115.16">
+        <route edges="-E3 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_88" type="passenger" depart="119.83">
         <route edges="E2"/>
     </vehicle>
-    <vehicle id="veh_34" type="passenger" depart="399.18">
+    <vehicle id="veh_14" type="passenger" depart="122.07">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_2" type="passenger" depart="122.23">
+        <route edges="E0 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_87" type="motorcycle" depart="123.22">
+        <route edges="E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_83" type="passenger" depart="124.07">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_23" type="passenger" depart="129.12">
+        <route edges="-E4 -E2 -E0"/>
+    </vehicle>
+    <vehicle id="veh_53" type="passenger" depart="134.84">
+        <route edges="E0 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_30" type="passenger" depart="142.91">
+        <route edges="-E5 E4"/>
+    </vehicle>
+    <vehicle id="veh_8" type="passenger" depart="146.12">
+        <route edges="-E5 -E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_81" type="passenger" depart="148.77">
+        <route edges="E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_94" type="motorcycle" depart="150.26">
+        <route edges="E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_68" type="passenger" depart="154.79">
+        <route edges="E2"/>
+    </vehicle>
+    <vehicle id="veh_59" type="passenger" depart="160.83">
+        <route edges="-E4 -E2 -E0"/>
+    </vehicle>
+    <vehicle id="veh_86" type="truck" depart="162.27">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_54" type="passenger" depart="175.32">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_55" type="passenger" depart="179.87">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_60" type="passenger" depart="180.79">
+        <route edges="-E1 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_18" type="truck" depart="185.49">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_9" type="motorcycle" depart="186.84">
+        <route edges="-E4 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_61" type="passenger" depart="188.38">
+        <route edges="-E1 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_50" type="passenger" depart="191.71">
+        <route edges="-E3 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_11" type="passenger" depart="192.89">
+        <route edges="-E5 E6"/>
+    </vehicle>
+    <vehicle id="veh_80" type="passenger" depart="192.95">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_78" type="passenger" depart="201.09">
+        <route edges="-E3 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_66" type="passenger" depart="206.11">
+        <route edges="-E5 E4"/>
+    </vehicle>
+    <vehicle id="veh_40" type="passenger" depart="207.37">
         <route edges="-E6 -E2 -E0"/>
     </vehicle>
-    <vehicle id="veh_61" type="truck" depart="399.87">
+    <vehicle id="veh_84" type="passenger" depart="209.52">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_22" type="passenger" depart="213.91">
+        <route edges="-E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_7" type="passenger" depart="215.36">
+        <route edges="-E6 -E2 -E0"/>
+    </vehicle>
+    <vehicle id="veh_20" type="passenger" depart="220.35">
+        <route edges="-E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_27" type="truck" depart="222.3">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_62" type="passenger" depart="228.52">
         <route edges="E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_58" type="motorcycle" depart="232.73">
+        <route edges="-E3 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_6" type="passenger" depart="236.2">
+        <route edges="E0 E3"/>
+    </vehicle>
+    <vehicle id="veh_91" type="motorcycle" depart="239.54">
+        <route edges="-E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_98" type="passenger" depart="243.96">
+        <route edges="E0 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_3" type="bus" depart="246.24">
+        <route edges="-E3 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_49" type="passenger" depart="246.88">
+        <route edges="-E4 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_43" type="passenger" depart="246.92">
+        <route edges="-E3 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_28" type="passenger" depart="250.38">
+        <route edges="-E4 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_5" type="passenger" depart="253.91">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_67" type="passenger" depart="259.21">
+        <route edges="-E1 E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_74" type="passenger" depart="261.41">
+        <route edges="-E5 -E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_24" type="passenger" depart="264.43">
+        <route edges="-E3 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_21" type="passenger" depart="264.71">
+        <route edges="-E1 -E0"/>
+    </vehicle>
+    <vehicle id="veh_89" type="passenger" depart="265.59">
+        <route edges="E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_31" type="passenger" depart="267.25">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_51" type="passenger" depart="268.2">
+        <route edges="E2"/>
+    </vehicle>
+    <vehicle id="veh_25" type="bus" depart="272.74">
+        <route edges="-E5 E4"/>
+    </vehicle>
+    <vehicle id="veh_63" type="truck" depart="275.47">
+        <route edges="-E4 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_75" type="passenger" depart="276.45">
+        <route edges="-E3 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_37" type="passenger" depart="292.43">
+        <route edges="-E5 -E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_19" type="bus" depart="294.9">
+        <route edges="E0 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_76" type="passenger" depart="295.94">
+        <route edges="-E5 -E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_96" type="passenger" depart="296.34">
+        <route edges="E0 E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_45" type="passenger" depart="299.31">
+        <route edges="-E4 -E2 -E0"/>
+    </vehicle>
+    <vehicle id="veh_52" type="passenger" depart="300.76">
+        <route edges="-E5 E4"/>
+    </vehicle>
+    <vehicle id="veh_41" type="passenger" depart="308.48">
+        <route edges="E0 E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_16" type="passenger" depart="312.26">
+        <route edges="-E5 E4"/>
+    </vehicle>
+    <vehicle id="veh_17" type="bus" depart="318.72">
+        <route edges="-E6 E4"/>
+    </vehicle>
+    <vehicle id="veh_48" type="passenger" depart="322.96">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_56" type="truck" depart="339.83">
+        <route edges="E0 E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_69" type="passenger" depart="340.69">
+        <route edges="-E1 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_26" type="passenger" depart="351.67">
+        <route edges="-E1 E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_34" type="passenger" depart="356.3">
+        <route edges="E0 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_10" type="truck" depart="357.84">
+        <route edges="-E5 E6"/>
+    </vehicle>
+    <vehicle id="veh_1" type="passenger" depart="358.86">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_29" type="passenger" depart="359.0">
+        <route edges="-E3 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_64" type="passenger" depart="359.26">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_39" type="passenger" depart="361.88">
+        <route edges="-E6 -E2 E3"/>
+    </vehicle>
+    <vehicle id="veh_85" type="passenger" depart="365.32">
+        <route edges="-E6 E4"/>
+    </vehicle>
+    <vehicle id="veh_79" type="motorcycle" depart="369.83">
+        <route edges="-E2 E1"/>
+    </vehicle>
+    <vehicle id="veh_12" type="passenger" depart="373.1">
+        <route edges="-E1 E2 E6"/>
+    </vehicle>
+    <vehicle id="veh_92" type="passenger" depart="376.34">
+        <route edges="-E1 -E0"/>
+    </vehicle>
+    <vehicle id="veh_0" type="passenger" depart="378.42">
+        <route edges="-E3 E2 E4"/>
+    </vehicle>
+    <vehicle id="veh_13" type="truck" depart="383.09">
+        <route edges="-E1 -E0"/>
+    </vehicle>
+    <vehicle id="veh_95" type="passenger" depart="384.31">
+        <route edges="E2 E5"/>
+    </vehicle>
+    <vehicle id="veh_46" type="passenger" depart="386.73">
+        <route edges="-E5 E4"/>
+    </vehicle>
+    <vehicle id="veh_77" type="passenger" depart="390.84">
+        <route edges="-E6 E4"/>
+    </vehicle>
+    <vehicle id="veh_65" type="passenger" depart="397.49">
+        <route edges="-E1 -E0"/>
     </vehicle>
 </routes>
