@@ -1,0 +1,26 @@
+mode: phase_selection
+gui: False
+num_cpu: 22
+vec_env: SubprocVecEnv
+n_steps: 128
+batch_size: 256
+simulation_steps: 1
+num_vehicles: 50
+sumo_no_step_log: True
+sumo_no_warnings: True
+total_timesteps: 281600000
+requested_iterations: 100000
+target_iterations: 100000
+estimate_interval: 1
+resume_path: .\logs\run_20251229_221216\ppo_traffic_14600000_steps.zip
+resume_timesteps: 14600000
+log_interval: 1
+port_base: None
+env_device: cpu
+train_device_requested: cuda
+train_device_actual: cuda
+torch_version: 2.11.0.dev20251229+cu128
+cuda_available: True
+cuda_version: 12.8
+cuda_device_name: NVIDIA GeForce RTX 5060 Ti
+cuda_capability: 12.0
