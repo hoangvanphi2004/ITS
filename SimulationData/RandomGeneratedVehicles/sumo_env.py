@@ -1,4 +1,3 @@
-
 import gymnasium as gym
 from gymnasium import spaces
 import traci
@@ -6,13 +5,13 @@ import numpy as np
 import sys
 import os
 
-# Import generate_traffic to create new scenarios on reset
+# Import generate_traffic để tạo kịch bản mới khi reset (nếu có file này)
 try:
     import generate_traffic
 except ImportError:
     generate_traffic = None
 
-# PCU Mapping
+# PCU Mapping: Quy đổi các loại xe ra đơn vị xe con
 PCU_MAPPING = {
     'passenger': 1.0,
     'truck': 2.0,
@@ -28,94 +27,98 @@ except ImportError:
 
 class SumoGymEnv(gym.Env):
     """
-    SUMO Gymnasium Environment for Traffic Signal Control
-    
-    Action Space:
-        Depends on mode:
-        - Mode 1 (Time Adjustment): 0 = Decrease Green, 1 = Keep, 2 = Increase Green
-        - Mode 2 (Phase Selection): Discrete(num_phases) - Select specific phase index
-        
-    Observation Space:
-        [queue_length_n, queue_length_e, queue_length_s, queue_length_w,
-         wait_time_n, wait_time_e, wait_time_s, wait_time_w,
-         current_phase_index]
+    Môi trường SUMO Gymnasium cho bài toán điều khiển đèn giao thông.
+    Đã được tối ưu hóa Reward Function để tránh lỗi 'Time Bias'.
     """
     
-    def __init__(self, mode='time_adjust', gui=False, max_steps=500, rank=0):
+    def __init__(self, mode='delta_time', gui=False, max_steps=1000, rank=0):
         super(SumoGymEnv, self).__init__()
         
         self.mode = mode
         self.gui = gui
-        self.max_steps = max_steps
+        self.max_steps = max_steps 
         self.step_counter = 0
         self.rank = rank
         
-        # Unique route file for this parallel instance to prevent conflicts
-        # We need to go up two levels: 
-        # 1. out of RandomGeneratedVehicles
-        # 2. out of SimulationData
-        # but wait, SimulationData/Intersect_Test/ is where we want to write.
-        # let's check current working directory during execution.
-        # Assuming we run from SimulationData/RandomGeneratedVehicles
+        # Thời gian xanh cơ sở
+        self.baseline_green_time = 35.0
         
+        # File route riêng biệt cho từng process (nếu chạy song song)
         self.route_file = f"../Intersect_Test/routes_{self.rank}.rou.xml"
         
         self.sumo_binary = "sumo-gui" if gui else "sumo"
         self.sumo_cmd = [
             self.sumo_binary,
             "-c", "../Intersect_Test/config.sumocfg",
-            "--route-files", self.route_file, # Override route file
+            "--route-files", self.route_file,
             "--start",
             "--quit-on-end"
         ]
         
-        # Define Action Space
-        if self.mode == 'time_adjust':
-            # 0: Decrease (-5s), 1: Keep, 2: Increase (+5s)
-            self.action_space = spaces.Discrete(3)
-        elif self.mode == 'phase_selection':
-            # Select phase index (assuming 8 phases as seen in original code)
-            self.action_space = spaces.Discrete(8)
+        self.tls_id = "J1"
+        self.green_phases = [0, 2] # Các phase xanh chính
+        self.current_green_phase_index = 0 
+        
+        # Khởi tạo lớp luật giao thông (Safety Layer)
+        if TrafficRules:
+            self.rules = TrafficRules(min_green_time=15)
+        else:
+            self.rules = None
+
+        # Không gian hành động: Delta time [-45s, +45s]
+        self.action_space = spaces.Box(low=np.array([-45.0]), high=np.array([45.0]), dtype=np.float32)
             
-        # Define Observation Space
-        # 4 directions * 2 metrics (queue, wait) + 1 current_phase = 9 metrics
+        # Không gian quan sát: 8 chỉ số (Queue & Loss cho 4 hướng) + 1 chỉ số Phase hiện tại
         self.observation_space = spaces.Box(
             low=0, high=np.inf, shape=(9,), dtype=np.float32
         )
         
-        self.tls_id = "J1" # Focusing on J1 for now as primary agent target
-        self.current_phase_index = 0
-        self.metric_collector = None
-        
-        # Initialize Safety Layer
-        if TrafficRules:
-            self.rules = TrafficRules(min_green_time=15)
-            self.last_phase_change_step = 0
-        else:
-            self.rules = None
-            
+        # Biến lưu trữ danh sách làn đường theo hướng (được khởi tạo khi reset)
+        self.direction_lanes = [] 
+
     def _get_start_vehicle_type_pcu(self, vtype):
-         # Try exact match first
+        """Lấy hệ số PCU dựa trên loại xe"""
         if vtype in PCU_MAPPING:
             return PCU_MAPPING[vtype]
-        # Try partial match (e.g. 'bus_1' -> 'bus')
+        # Tìm kiếm gần đúng (ví dụ 'bus_1' -> 'bus')
         vtype_lower = vtype.lower()
         for key, pcu in PCU_MAPPING.items():
             if key in vtype_lower:
                 return pcu
-        return 1.0 # Default
-    
+        return 1.0 # Mặc định
+
+    def _map_lanes_dynamic(self):
+        """
+        Tự động phát hiện các làn đường được điều khiển bởi đèn tín hiệu
+        và gom nhóm chúng theo hướng (Edge ID).
+        """
+        controlled_lanes = list(set(traci.trafficlight.getControlledLanes(self.tls_id)))
+        lane_groups = {}
+        
+        for lane in controlled_lanes:
+            edge_id = traci.lane.getEdgeID(lane)
+            if edge_id not in lane_groups:
+                lane_groups[edge_id] = []
+            lane_groups[edge_id].append(lane)
+        
+        # Sắp xếp theo tên Edge ID để đảm bảo thứ tự N-E-S-W nhất quán giữa các lần chạy
+        sorted_keys = sorted(lane_groups.keys())
+        self.direction_lanes = [lane_groups[k] for k in sorted_keys]
+        
+        # Đảm bảo luôn có 4 hướng (padding list rỗng nếu map ít hơn 4 hướng)
+        while len(self.direction_lanes) < 4:
+            self.direction_lanes.append([])
+
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         
-        # 1. Generate new traffic scenario (Adaptive)
+        # 1. Tạo kịch bản giao thông mới (nếu có)
         if generate_traffic:
-            # Only print for rank 0 to avoid clutter
             if self.rank == 0:
                 print(f"Generating new traffic scenario for rank {self.rank}...")
             generate_traffic.generate_route_file(self.route_file)
             
-        # 2. Start SUMO
+        # 2. Khởi động SUMO
         try:
             traci.close()
         except:
@@ -125,137 +128,152 @@ class SumoGymEnv(gym.Env):
             traci.start(self.sumo_cmd)
         except Exception as e:
             print(f"Error starting SUMO: {e}")
-            # Consider raising error or retrying
         
+        # 3. Map làn đường động (Chỉ làm 1 lần khi reset)
+        self._map_lanes_dynamic()
+
         self.step_counter = 0
-        self.current_phase_index = 0
-        self.last_phase_change_step = 0 # Assume started at 0
+        self.current_green_phase_index = 0
         
         return self._get_observation(), {}
         
     def step(self, action):
         self.step_counter += 1
-        
-        # 1. Apply Action
-        self._apply_action(action)
-        
-        # 2. Run Simulation Steps (e.g., 5 seconds)
-        # We simulate multiple steps to let the action have effect
-        simulation_steps = 5
-        for _ in range(simulation_steps):
-            traci.simulationStep()
-            
-        # 3. Get Observation
-        observation = self._get_observation()
-        
-        # 4. Calculate Reward
-        # Reward = - (1.0 * Total Queue PCU + 0.1 * Total Wait PCU)
-        # We want to minimize queue and wait, so maximize negative sum
-        queue_len_pcu = np.sum(observation[:4])
-        wait_time_pcu = np.sum(observation[4:8])
-        
-        # Weighted Reward
-        reward = - (1.0 * queue_len_pcu + 0.1 * wait_time_pcu)
-        
-        # 5. Check Done
-        terminated = self.step_counter >= self.max_steps
+        terminated = False
         truncated = False
         
-        if terminated:
-            # Don't close here, let the main loop call env.close() or env.reset()
-            pass
+        # Lấy hành động (delta)
+        delta = float(action[0])
+        
+        # 1. Tính thời gian đèn xanh mục tiêu
+        target_duration = self.baseline_green_time + delta
+        
+        # 2. Áp dụng giới hạn an toàn (Min/Max Green)
+        min_g = 15.0
+        max_g = 90.0
+        if self.rules:
+            min_g = self.rules.min_green_time
+            if hasattr(self.rules, 'max_green_time'):
+                max_g = self.rules.max_green_time
+        
+        target_duration = np.clip(target_duration, min_g, max_g)
+        
+        # 3. Đặt Phase Xanh
+        phase_id = self.green_phases[self.current_green_phase_index]
+        traci.trafficlight.setPhase(self.tls_id, phase_id)
+        
+        # Biến để tính Reward trung bình
+        accumulated_queue = 0
+        accumulated_loss = 0
+        steps_run = 0
+        
+        # 4. Chạy mô phỏng cho Phase Xanh
+        steps_green = int(target_duration)
+        for _ in range(steps_green):
+            traci.simulationStep()
+            steps_run += 1
             
+            # Lấy quan sát tức thời để cộng dồn
+            obs = self._get_observation()
+            q_pcu = np.sum(obs[:4])
+            l_pcu = np.sum(obs[4:8])
+            
+            accumulated_queue += q_pcu
+            accumulated_loss += l_pcu
+            
+            if traci.simulation.getMinExpectedNumber() <= 0:
+                terminated = True
+                break
+        
+        # 5. Chuyển sang Phase Vàng (Cố định 3s)
+        if not terminated:
+            yellow_phase = phase_id + 1
+            # Kiểm tra xem phase vàng có tồn tại trong file net không
+            all_programs = traci.trafficlight.getAllProgramLogics(self.tls_id)
+            if len(all_programs) > 0:
+                num_phases = len(all_programs[0].phases)
+                if yellow_phase < num_phases:
+                    traci.trafficlight.setPhase(self.tls_id, yellow_phase)
+            
+            for _ in range(3): # 3 giây vàng
+                traci.simulationStep()
+                steps_run += 1
+                
+                obs = self._get_observation()
+                accumulated_queue += np.sum(obs[:4])
+                accumulated_loss += np.sum(obs[4:8])
+        
+        # --- QUAN TRỌNG: TÍNH REWARD ĐÃ CHUẨN HÓA ---
+        # Chia tổng phạt cho số giây đã chạy -> Ra mức phạt trung bình/giây
+        # Điều này ngăn Agent chọn phase ngắn chỉ để kết thúc sớm.
+        if steps_run > 0:
+            avg_queue = accumulated_queue / steps_run
+            avg_loss = accumulated_loss / steps_run
+            # Công thức Reward: Ưu tiên giảm hàng đợi, phụ là giảm thời gian chờ
+            total_reward = - (1.0 * avg_queue + 0.1 * avg_loss)
+        else:
+            total_reward = 0
+        
+        # 6. Chuẩn bị cho bước tiếp theo
+        self.current_green_phase_index = (self.current_green_phase_index + 1) % len(self.green_phases)
+
+        # Kiểm tra giới hạn thời gian (Max Steps)
+        if self.step_counter >= self.max_steps:
+            truncated = True
+            
+        observation = self._get_observation()
+        
+        # Thông tin bổ sung để debug
         info = {
-            "queue_length": queue_len,
-            "wait_time": wait_time
+            "avg_queue_pcu": accumulated_queue / max(1, steps_run),
+            "avg_loss_pcu": accumulated_loss / max(1, steps_run),
+            "actual_duration": target_duration
         }
         
-        return observation, reward, terminated, truncated, info
-        
-    def _apply_action(self, action):
-        if self.mode == 'time_adjust':
-            # Adjust duration of current phase
-            # This is tricky in SUMO continuously. 
-            # Simplified approach: If action is extend, we just hold phase longer in next step loop.
-            # Real implementation might need to modify logic phase duration.
-            # For this prototype: 
-            # 0: Force switch to next phase immediately
-            # 1: Do nothing (follow logic)
-            # 2: Extend current phase
-            pass # TODO: Refine this logic for SUMO integration
-            
-        elif self.mode == 'phase_selection':
-            # 1. Get current state
-            current_phase = traci.trafficlight.getPhase(self.tls_id)
-            
-            # Calculate how long we've been in this phase
-            # current simulation time - time of last change
-            # Note: Simulation time in SUMO is in seconds, but we track steps.
-            # Ideally we track simulation seconds.
-            current_sim_time = traci.simulation.getTime()
-            current_duration = current_sim_time - self.last_phase_change_step
-            
-            # 2. Safety Check (Rule-Based Supervisor)
-            final_action = action
-            if self.rules:
-                final_action = self.rules.get_safe_action(
-                    self.tls_id, 
-                    action, 
-                    current_phase, 
-                    current_duration
-                )
-                
-            # 3. Apply Action
-            if current_phase != final_action:
-                traci.trafficlight.setPhase(self.tls_id, final_action)
-                self.current_phase_index = final_action
-                # Update timestamp of change
-                self.last_phase_change_step = traci.simulation.getTime()
-                
+        return observation, total_reward, terminated, truncated, info
+
     def _get_observation(self):
-        # Collect metrics from SUMO
-        # This is a simplified extraction. 
-        # In a full implementation, we would inspect lanes for J1.
-        
-        # Dummy mapping for J1 lanes (from original code analysis)
-        # North: -E1, East: -E2, South: -E3, West: -E0
-        incoming_lanes = ["-E1_0", "-E1_1", "-E2_0", "-E2_1", "-E3_0", "-E3_1", "-E0_0", "-E0_1"]
-        
+        """
+        Thu thập thông tin quan sát.
+        Sử dụng danh sách làn đường đã được map tự động trong self.direction_lanes
+        """
         queues = []
         waits = []
         
-        # Rough estimation by aggregating lanes
-        # North, East, South, West
-        directions = [["-E1_0", "-E1_1"], ["-E2_0", "-E2_1"], ["-E3_0", "-E3_1"], ["-E0_0", "-E0_1"]]
-        
-        for lanes in directions:
-            q = 0.0
-            w = 0.0
+        # Duyệt qua 4 nhóm làn đường (tương ứng 4 hướng)
+        for lanes in self.direction_lanes:
+            q_val = 0.0
+            w_val = 0.0
+            
             for lane in lanes:
                 try:
-                    # Get all vehicles in the lane
+                    # Lấy danh sách xe trên làn
                     vehicles = traci.lane.getLastStepVehicleIDs(lane)
+                    
                     for veh in vehicles:
                         vtype = traci.vehicle.getTypeID(veh)
                         pcu = self._get_start_vehicle_type_pcu(vtype)
                         
-                        # Calculate PCU-weighted Queue
-                        # Queue: vehicles with speed < 0.1 m/s (approx)
+                        # Queue: Xe di chuyển chậm dưới 0.1 m/s
                         if traci.vehicle.getSpeed(veh) < 0.1:
-                            q += pcu
+                            q_val += pcu
                             
-                        # Calculate PCU-weighted Wait Time
-                        # Note: getWaitingTime returns accumulated waiting seconds
-                        # We weight the waiting seconds by PCU
-                        waiting_seconds = traci.vehicle.getWaitingTime(veh)
-                        w += waiting_seconds * pcu
-                        
+                        # TimeLoss: Thời gian mất đi do đi chậm hơn tốc độ tối đa
+                        t_loss = traci.vehicle.getTimeLoss(veh)
+                        w_val += t_loss * pcu
                 except:
                     pass
-            queues.append(q)
-            waits.append(w)
             
-        obs = np.array(queues + waits + [self.current_phase_index], dtype=np.float32)
+            queues.append(q_val)
+            waits.append(w_val)
+            
+        # Ghép lại thành vector [Q1, Q2, Q3, Q4, L1, L2, L3, L4, PhaseIndex]
+        # Padding nếu thiếu hướng đã được xử lý ở _map_lanes_dynamic
+        # Chúng ta chỉ lấy 4 phần tử đầu (nếu map có > 4 cạnh tới, ta chỉ lấy 4 cái chính)
+        queues = queues[:4]
+        waits = waits[:4]
+        
+        obs = np.array(queues + waits + [self.current_green_phase_index], dtype=np.float32)
         return obs
         
     def close(self):
@@ -263,4 +281,3 @@ class SumoGymEnv(gym.Env):
             traci.close()
         except:
             pass
-
