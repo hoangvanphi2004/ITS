@@ -8,7 +8,9 @@ import random
 import os
 
 # Configuration
-OUTPUT_FILE = "../SimulationData/Intersect_Test/routes.rou.xml"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+INTERSECT_DIR = os.path.join(BASE_DIR, "Intersect_Test")
+OUTPUT_FILE = os.path.join(INTERSECT_DIR, "routes.rou.xml")
 NET_FILE = "network.net.xml"  # Required for some generators, but here we use simple edge lists if known
 SIMULATION_STEPS = 500  # Total duration to generate traffic for
 
@@ -60,9 +62,9 @@ ROUTES = [
     ["-E1", "E2", "E5"]
 ]
 
-def get_random_vehicle_type():
+def get_random_vehicle_type(rng=random):
     """Select a vehicle type based on probability"""
-    r = random.random()
+    r = rng.random()
     cumulative_prob = 0.0
     for v_type, data in VEHICLE_TYPES.items():
         cumulative_prob += data["probability"]
@@ -70,9 +72,13 @@ def get_random_vehicle_type():
             return v_type
     return "passenger"  # Fallback
 
-def generate_route_file(output_path, num_vehicles=200):
+def generate_route_file(output_path, num_vehicles=200, seed=None):
     """Generate the routes.rou.xml file"""
-    
+    rng = random.Random(seed) if seed is not None else random
+    dir_path = os.path.dirname(output_path)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
+
     with open(output_path, "w") as f:
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<routes>\n')
@@ -90,11 +96,11 @@ def generate_route_file(output_path, num_vehicles=200):
         vehicles = []
         for i in range(num_vehicles):
             veh_id = f"veh_{i}"
-            depart_time = random.uniform(0, SIMULATION_STEPS * 0.8) 
+            depart_time = rng.uniform(0, SIMULATION_STEPS * 0.8) 
             depart_time = round(depart_time, 2)
             
-            v_type = get_random_vehicle_type()
-            route_edges = random.choice(ROUTES)
+            v_type = get_random_vehicle_type(rng)
+            route_edges = rng.choice(ROUTES)
             edges_str = " ".join(route_edges)
             
             vehicles.append({

@@ -9,7 +9,9 @@ import generate_traffic
 import os
 
 # Configuration
-CONFIG_FILE = "../SimulationData/Intersect_Test/config.sumocfg"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+INTERSECT_DIR = os.path.join(BASE_DIR, "Intersect_Test")
+CONFIG_FILE = os.path.join(INTERSECT_DIR, "config.sumocfg")
 SUMO_CMD = ["sumo-gui", "-c", CONFIG_FILE, "--start"]
 
 def preview():
@@ -21,12 +23,7 @@ def preview():
 
     print("1. Generating new random traffic scenario...")
     # Generate traffic to the file expected by config.sumocfg
-    # Note: config points to routes.rou.xml in the same folder usually, 
-    # but our generate_traffic writes to "SimulationData/Intersect_Test/routes.rou.xml" by default in the previous runs?
-    # Let's check generate_traffic.py defaults. 
-    # It defaults to "routes.rou.xml" in current dir if not specified, but in train.py we called it with specific path.
-    
-    route_file_path = "../SimulationData/Intersect_Test/routes.rou.xml"
+    route_file_path = os.path.join(INTERSECT_DIR, "routes.rou.xml")
     generate_traffic.generate_route_file(route_file_path, num_vehicles=100)
     print(f"   Scenario saved to: {route_file_path}")
 

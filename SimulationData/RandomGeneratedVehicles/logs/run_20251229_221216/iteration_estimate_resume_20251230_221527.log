@@ -1,0 +1,4 @@
+iter,elapsed_sec,avg_iter_sec,eta_target_sec,total_est_sec
+78076,0.82,0.0000,0.02,0.84
+78077,1.71,0.0000,0.04,1.75
+78078,2.48,0.0000,0.06,2.54

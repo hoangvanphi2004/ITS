@@ -111,12 +111,20 @@ class SumoGymEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
+        self.episode_count += 1
         
         # 1. Tạo kịch bản giao thông mới (nếu có)
         if generate_traffic:
             if self.rank == 0:
-                print(f"Generating new traffic scenario for rank {self.rank}...")
-            generate_traffic.generate_route_file(self.route_file)
+                print(
+                    "Generating new traffic scenario for rank "
+                    f"{self.rank} (vehicles={current_vehicles}, seed={scenario_seed})..."
+                )
+            generate_traffic.generate_route_file(
+                self.route_file,
+                num_vehicles=current_vehicles,
+                seed=scenario_seed,
+            )
             
         # 2. Khởi động SUMO
         try:
@@ -125,7 +133,7 @@ class SumoGymEnv(gym.Env):
             pass
             
         try:
-            traci.start(self.sumo_cmd)
+            traci.start(self.sumo_cmd, port=self.sumo_port)
         except Exception as e:
             print(f"Error starting SUMO: {e}")
         
@@ -274,6 +282,7 @@ class SumoGymEnv(gym.Env):
         waits = waits[:4]
         
         obs = np.array(queues + waits + [self.current_green_phase_index], dtype=np.float32)
+        self.last_throughput = moving_pcu
         return obs
         
     def close(self):
