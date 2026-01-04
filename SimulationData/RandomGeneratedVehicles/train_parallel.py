@@ -74,45 +74,7 @@ def train(steps=100000, num_cpu=4, mode='delta_time', gui=False):
             for i in range(num_cpu)
         ])
     else:
-        vec_env_name = "DummyVecEnv"
-        env = DummyVecEnv([
-            make_env(
-                0,
-                mode=mode,
-                gui=gui,
-                port_base=port_base,
-                simulation_steps=simulation_steps,
-                num_vehicles=num_vehicles,
-                curriculum_end=curriculum_end,
-                curriculum_episodes=curriculum_episodes,
-                scenario_seed=scenario_seed,
-                scenario_seed_increment=scenario_seed_increment,
-                throughput_weight=throughput_weight,
-                sumo_no_step_log=sumo_no_step_log,
-                sumo_no_warnings=sumo_no_warnings,
-            )
-        ])
-    env = VecMonitor(env)
-    vecnorm_path = None
-    if normalize:
-        vecnorm_path = os.path.join(run_dir, "vecnormalize.pkl")
-        if resume_path:
-            resume_dir = os.path.dirname(os.path.abspath(resume_path))
-            resume_vecnorm_path = os.path.join(resume_dir, "vecnormalize.pkl")
-            if os.path.isfile(resume_vecnorm_path):
-                env = VecNormalize.load(resume_vecnorm_path, env)
-                env.training = True
-                env.norm_reward = True
-                if resume_dir != run_dir:
-                    vecnorm_path = os.path.join(run_dir, "vecnormalize.pkl")
-            else:
-                print(
-                    "WARNING: VecNormalize stats not found; "
-                    "starting normalization from scratch."
-                )
-                env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.0, gamma=0.99)
-        else:
-            env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.0, gamma=0.99)
+        env = DummyVecEnv([make_env(0, mode=mode, gui=gui)])
 
     # [NEW] Normalize Observation and Reward
     # This is critical for convergence (Explained Variance fix)
