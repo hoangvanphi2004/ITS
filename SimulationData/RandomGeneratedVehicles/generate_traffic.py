@@ -18,19 +18,19 @@ SIMULATION_STEPS = 500  # Total duration to generate traffic for
 VEHICLE_TYPES = {
     "passenger": {
         "accel": 2.6, "decel": 4.5, "sigma": 0.5, "length": 5.0, "minGap": 2.5, "maxSpeed": 50.0,
-        "color": "1,0,0", "probability": 0.7  # 70% chance
+        "color": "1,0,0", "probability": 0.7, "guiShape": "passenger"
     },
     "bus": {
         "accel": 1.2, "decel": 4.0, "sigma": 0.5, "length": 12.0, "minGap": 3.0, "maxSpeed": 30.0,
-        "color": "0,0,1", "probability": 0.1  # 10% chance
+        "color": "0,0,1", "probability": 0.1, "guiShape": "bus"
     },
     "truck": {
         "accel": 1.5, "decel": 3.5, "sigma": 0.5, "length": 10.0, "minGap": 3.0, "maxSpeed": 40.0,
-        "color": "0,1,0", "probability": 0.1  # 10% chance
+        "color": "0,1,0", "probability": 0.1, "guiShape": "truck"
     },
     "motorcycle": {
         "accel": 3.0, "decel": 5.0, "sigma": 0.5, "length": 2.5, "minGap": 1.5, "maxSpeed": 55.0,
-        "color": "1,1,0", "probability": 0.1  # 10% chance
+        "color": "1,1,0", "probability": 0.1, "guiShape": "motorcycle"
     }
 }
 
@@ -89,6 +89,7 @@ def generate_route_file(output_path, num_vehicles=200, seed=None):
                     f'accel="{specs["accel"]}" decel="{specs["decel"]}" '
                     f'sigma="{specs["sigma"]}" length="{specs["length"]}" '
                     f'minGap="{specs["minGap"]}" maxSpeed="{specs["maxSpeed"]}" '
+                    f'guiShape="{specs["guiShape"]}" '
                     f'color="{specs["color"]}"/>\n')
         
         
