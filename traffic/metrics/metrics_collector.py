@@ -96,7 +96,7 @@ class MetricsCollector:
 			except Exception as e:
 				print(f"Error in update_wait_times for {vehicle_id}: {e}")
 		
-	def get_current_waiting_time_at_tls(self, tls_id):
+	def get_current_waiting_time_at_tls(self, tls_id, current_time):
 		total_wait_time = 0.0
 		controlled_lanes = traci.trafficlight.getControlledLanes(tls_id)
 		for lane in controlled_lanes:
@@ -108,7 +108,7 @@ class MetricsCollector:
 						if vehicle_id in self.vehicles_in_intersection:
 							vehicle_data = self.vehicles_in_intersection[vehicle_id]
 							if vehicle_data['entry_time'] is not None:
-								wait_time = traci.simulation.getTime() - vehicle_data['entry_time']
+								wait_time = current_time - vehicle_data['entry_time']
 								total_wait_time += wait_time * vehicle_data['pcu']
 				except Exception as e:
 					print(f"Error calculating current wait time for vehicle {vehicle_id}: {e}")

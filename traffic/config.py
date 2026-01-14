@@ -2,7 +2,7 @@
 
 # SUMO configuration
 SUMO_BINARY = r"C:\Phi\Work\Simulation\SUMO\bin\sumo.exe"
-SUMO_CONFIG_PATH = r"C:\Phi\Work\SimulationData\HighPriorityVehicles\config.sumocfg"
+SUMO_CONFIG_PATH = r"C:\Phi\Work\SimulationData\SampleData\HighPriorityVehicles\config.sumocfg"
 SUMO_CMD = [SUMO_BINARY, "-c", SUMO_CONFIG_PATH]
 
 # Priority control parameters
